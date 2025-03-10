@@ -16,17 +16,17 @@ class UFLDModel(tf.keras.Model):
         # Couche 1x1 pour ajuster la sortie de ResNet50
         self.conv1x1 = layers.Conv2D(256, (1, 1), activation='relu')
         
-        # Pooling pour transformer la sortie en un vecteur
-        self.global_pool = layers.GlobalAveragePooling2D()
+        # Flatten pour préserver les informations spatiales
+        self.flatten = layers.Flatten()
 
         # Fully Connected pour la détection des lignes et leur présence
-        self.fc_lanes = layers.Dense(56, activation='sigmoid', name="fc_lanes")  # 56 points pour la prédiction des lignes
+        self.fc_lanes = layers.Dense(4 * 56, activation='sigmoid', name="fc_lanes")  # 4 lignes * 28 points * 2 (x, y)
         self.fc_presence = layers.Dense(4, activation='sigmoid', name="fc_presence")  # 4 valeurs pour indiquer la présence des lignes
 
     def call(self, inputs):
-        x = self.backbone(inputs, training=self.backbone.trainable)  # Assure que le backbone respecte `trainable`
+        x = self.backbone(inputs, training=self.backbone.trainable)  # Assure que le backbone respecte trainable
         x = self.conv1x1(x)  # Réduction des canaux
-        x = self.global_pool(x)  # Compression en vecteur
+        x = self.flatten(x)  # Compression en vecteur tout en préservant les informations spatiales
         lanes = self.fc_lanes(x)  # Prédiction des points de ligne
         presence = self.fc_presence(x)  # Prédiction de la présence des lignes
         return {"fc_lanes": lanes, "fc_presence": presence}  # Sortie sous forme de dictionnaire

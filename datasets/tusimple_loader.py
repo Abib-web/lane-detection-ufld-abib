@@ -145,16 +145,18 @@ class TuSimpleDataset(Sequence):
             # Générer les labels pour les points de voie
             lane_points = []
             for lane in lanes:
+                lane_points_per_lane = []
                 for x, y in zip(lane, h_samples):
                     if x > 0:
-                        lane_points.append(x / 1280)  # Normalisation en x
-                        lane_points.append(y / 720)   # Normalisation en y
+                        lane_points_per_lane.append(x / 1280 * 224)  # Normalisation en x
+                        lane_points_per_lane.append(y / 720 * 224)   # Normalisation en y
                     else:
-                        lane_points.append(0.0)  # Si pas détecté
-                        lane_points.append(0.0)
+                        lane_points_per_lane.append(0.0)  # Si pas détecté
+                        lane_points_per_lane.append(0.0)
+                lane_points.extend(lane_points_per_lane)
 
             # Vérifier la taille et compléter si nécessaire
-            max_size = 56  # Nombre fixe attendu
+            max_size = 4 * 56  # 4 lignes * 28 points * 2 (x, y)
             if len(lane_points) < max_size:
                 lane_points.extend([0.0] * (max_size - len(lane_points)))
             elif len(lane_points) > max_size:

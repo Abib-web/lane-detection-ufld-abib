@@ -3,7 +3,7 @@ import os
 class Config:
     def __init__(self):
         # Chemin vers le dossier des données
-        self.data_dir = os.path.join("C:\\", "Users", "Diaraye Barry", "Desktop", "ulfd-lane-detection", "data", "tusimple")
+        self.data_dir = os.path.join("C:\\", "Users", "koneo", "Desktop", "lane-detection-ufld-abib", "data", "tusimple")
         
         # Paramètres d'entraînement
         self.batch_size = 8
@@ -11,8 +11,8 @@ class Config:
         self.epochs = 10
         
         # Chemin vers le dossier des checkpoints
-        self.checkpoints_dir = os.path.join("C:\\", "Users", "Diaraye Barry", "Desktop", "ulfd-lane-detection", "checkpoints")
-        self.output_path_dir = os.path.join("C:\\", "Users", "Diaraye Barry", "Desktop", "ulfd-lane-detection", "outpout")
+        self.checkpoints_dir = os.path.join("C:\\", "Users", "koneo", "Desktop", "lane-detection-ufld-abib", "checkpoints")
+        self.output_path_dir = os.path.join("C:\\", "Users", "koneo", "Desktop", "lane-detection-ufld-abib", "outpout")
 
         # Créer le dossier des checkpoints s'il n'existe pas
         os.makedirs(self.checkpoints_dir, exist_ok=True)

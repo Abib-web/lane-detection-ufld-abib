@@ -1,6 +1,6 @@
 import sys
 import os
-from tensorflow.keras.callbacks import CSVLogger, ReduceLROnPlateau, ModelCheckpoint
+from tensorflow.keras.callbacks import CSVLogger, ReduceLROnPlateau, ModelCheckpoint, EarlyStopping
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import tensorflow as tf
@@ -59,6 +59,7 @@ model.compile(
 # Callbacks
 csv_logger = CSVLogger(os.path.join(config.checkpoints_dir, "training_log.csv"), append=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 checkpoint_callback = ModelCheckpoint(
     filepath=os.path.join(config.checkpoints_dir, "ufld_model_epoch_{epoch:02d}.keras"),
     save_best_only=True,
@@ -70,9 +71,9 @@ checkpoint_callback = ModelCheckpoint(
 # Entraîner le modèle
 model.fit(
     train_dataset,
-    epochs=config.epochs,
+    epochs=50,  # Augmenter le nombre d'epochs
     validation_data=val_dataset,
-    callbacks=[reduce_lr, checkpoint_callback, csv_logger]  # Ajoutez csv_logger ici
+    callbacks=[reduce_lr, checkpoint_callback, csv_logger, early_stopping]
 )
 
 # Sauvegarder le modèle final
