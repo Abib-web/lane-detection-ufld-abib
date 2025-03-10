@@ -1,0 +1,66 @@
+# Ignorer les fichiers de configuration locaux
+.env
+*.env
+
+# Ignorer les fichiers de dépendances Python
+venv/
+env/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Ignorer les fichiers de cache et de logs
+.cache/
+*.log
+logs/
+
+# Ignorer les fichiers de données volumineux
+data/
+
+# Ignorer les fichiers de modèles entraînés
+
+checkpoints/
+*.h5
+*.pt
+*.pth
+*.onnx
+*.tflite
+
+# Ignorer les fichiers de configuration IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignorer les fichiers de notebooks Jupyter temporaires
+.ipynb_checkpoints/
+
+# Ignorer les fichiers de sauvegarde
+*.bak
+*.tmp
+
+# Ignorer les fichiers de dépendances Python (pip, poetry, etc.)
+pip-selfcheck.json
+Pipfile.lock
+poetry.lock
+requirements.txt
+
+# Ignorer les fichiers de build et de distribution
+build/
+dist/
+*.egg-info/
+
+# Ignorer les fichiers spécifiques à macOS
+.DS_Store
+
+# Ignorer les fichiers spécifiques à Windows
+Thumbs.db
+Desktop.ini
+
+# Ignorer les fichiers de tests unitaires temporaires
+.coverage
+htmlcov/
+.pytest_cache/
