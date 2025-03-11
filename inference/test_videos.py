@@ -7,7 +7,6 @@ import numpy as np
 import tensorflow as tf
 from models.ufld_model import UFLDModel
 from utils.config import Config
-from datasets.tusimple_loader import TuSimpleDataset
 
 # Fonction pour afficher uniquement les points de prédiction
 def display_points_only(image, lane_points):
@@ -27,10 +26,7 @@ def display_points_only(image, lane_points):
         for point in points:
             cv2.circle(image, point, radius=5, color=colors[i], thickness=-1)  # Tracer un cercle pour chaque point
 
-    # Afficher l'image
-    cv2.imshow("Points de voie", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    return image
 
 # Fonction pour post-traiter les prédictions
 def postprocess_predictions(predictions, threshold=0.2):
@@ -49,35 +45,31 @@ if not os.path.exists(model_path):
     raise FileNotFoundError(f"Le fichier de modèle {model_path} n'existe pas.")
 model = tf.keras.models.load_model(model_path)
 
-# Créer le dataset de test
-test_dataset = TuSimpleDataset(
-    data_dir=os.path.join(config.data_dir, "TUSimple"),
-    mode='test',
-    batch_size=15,
-    img_size=(780, 900),
-    shuffle=False
-)
+# Chemin vers la vidéo
+video_path = "C:/Users/koneo/Downloads/13284805_2160_3840_24fps.mp4"
 
-# Vérifier si le dataset de test est vide
-if len(test_dataset) == 0:
-    raise ValueError("Le dataset de test est vide.")
+# Ouvrir la vidéo
+cap = cv2.VideoCapture(video_path)
+if not cap.isOpened():
+    raise ValueError(f"Impossible d'ouvrir la vidéo à l'emplacement : {video_path}")
 
-# Tester plusieurs images du dataset de test
-for i in range(len(test_dataset)):
-    image, label = test_dataset[i]
+# Boucle pour traiter chaque frame de la vidéo
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break  # Sortir de la boucle si la vidéo est terminée
 
-    # Afficher l'image originale
-    original_image = (image[0] * 255).astype(np.uint8)
-    cv2.imshow("Image originale", original_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Redimensionner l'image pour l'inférence (garder une taille raisonnable)
+    original_height, original_width = frame.shape[:2]
+    image_resized = cv2.resize(frame, (640, 360))  # Redimensionner à une taille plus grande (640x360)
+    resized_height, resized_width = image_resized.shape[:2]
 
-    # Redimensionner l'image pour l'inférence
-    image_resized = cv2.resize(image[0], (224, 224))
-    image_resized = np.expand_dims(image_resized, axis=0).astype(np.float32) / 255.0
+    # Préparer l'image pour le modèle
+    image_for_model = cv2.resize(image_resized, (224, 224))  # Redimensionner à la taille attendue par le modèle
+    image_for_model = np.expand_dims(image_for_model, axis=0).astype(np.float32) / 255.0
 
     # Faire une prédiction
-    predictions = model.predict(image_resized)
+    predictions = model.predict(image_for_model)
     lane_predictions = predictions['fc_lanes']
 
     # Post-traitement des prédictions
@@ -86,13 +78,22 @@ for i in range(len(test_dataset)):
     # Dénormaliser les points de voie
     lane_points = lane_predictions.reshape(4, -1, 2)  # Reshape en (4, N, 2)
     for j in range(4):
-        lane_points[j][:, 0] *= original_image.shape[1]  # Mise à l'échelle en largeur
-        lane_points[j][:, 1] *= original_image.shape[0]  # Mise à l'échelle en hauteur
+        lane_points[j][:, 0] *= resized_width  # Mise à l'échelle en largeur
+        lane_points[j][:, 1] *= resized_height  # Mise à l'échelle en hauteur
 
-    # Afficher uniquement les points de voie
-    display_points_only(original_image.copy(), lane_points)
+    # Afficher les points de voie sur la frame redimensionnée
+    frame_with_points = display_points_only(image_resized.copy(), lane_points)
 
-    # Enregistrer l'image avec les prédictions
-    output_path = os.path.join(config.output_path_dir, f"prediction_{i}.png")
-    cv2.imwrite(output_path, cv2.cvtColor(original_image, cv2.COLOR_RGB2BGR))
-    print(f"Résultat enregistré sous {output_path}")
+    # Redimensionner l'affichage final pour mieux voir la route
+    display_frame = cv2.resize(frame_with_points, (1080, 720))  # Afficher en 1280x720
+
+    # Afficher la frame avec les points de voie
+    cv2.imshow("Prédictions de voie", display_frame)
+
+    # Quitter si l'utilisateur appuie sur 'q'
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Libérer les ressources
+cap.release()
+cv2.destroyAllWindows()

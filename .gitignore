@@ -29,6 +29,19 @@ checkpoints/
 *.onnx
 *.tflite
 
+checkpoints1/
+*.h5
+*.pt
+*.pth
+*.onnx
+*.tflite
+
+checkpoints2/
+*.h5
+*.pt
+*.pth
+*.onnx
+*.tflite
 # Ignorer les fichiers de configuration IDE
 .idea/
 .vscode/

@@ -148,14 +148,14 @@ class TuSimpleDataset(Sequence):
                 lane_points_per_lane = []
                 for x, y in zip(lane, h_samples):
                     if x > 0:
-                        lane_points_per_lane.append(x / 1280 * 224)  # Normalisation en x
-                        lane_points_per_lane.append(y / 720 * 224)   # Normalisation en y
+                        lane_points_per_lane.append(x / self.img_size[0])  # Normalisation en x
+                        lane_points_per_lane.append(y / self.img_size[1])   # Normalisation en y
                     else:
-                        lane_points_per_lane.append(0.0)  # Si pas détecté
+                        lane_points_per_lane.append(0.0)  # Remplacer -2 par 0.0
                         lane_points_per_lane.append(0.0)
                 lane_points.extend(lane_points_per_lane)
 
-            # Vérifier la taille et compléter si nécessaire
+            # Compléter avec des zéros si nécessaire
             max_size = 4 * 56  # 4 lignes * 28 points * 2 (x, y)
             if len(lane_points) < max_size:
                 lane_points.extend([0.0] * (max_size - len(lane_points)))
@@ -166,7 +166,6 @@ class TuSimpleDataset(Sequence):
 
             # Générer les labels pour la présence de voies
             presence = [1.0 if any(x > 0 for x in lane) else 0.0 for lane in lanes]
-            # S'assurer que la taille est de 4 (une valeur par voie)
             if len(presence) < 4:
                 presence.extend([0.0] * (4 - len(presence)))
             elif len(presence) > 4:
