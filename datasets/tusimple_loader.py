@@ -148,8 +148,8 @@ class TuSimpleDataset(Sequence):
                 lane_points_per_lane = []
                 for x, y in zip(lane, h_samples):
                     if x > 0:
-                        lane_points_per_lane.append(x / self.img_size[0])  # Normalisation en x
-                        lane_points_per_lane.append(y / self.img_size[1])   # Normalisation en y
+                        lane_points_per_lane.append(x / 1280  )  # Normalisation en x
+                        lane_points_per_lane.append(y / 720  )   # Normalisation en y
                     else:
                         lane_points_per_lane.append(0.0)  # Remplacer -2 par 0.0
                         lane_points_per_lane.append(0.0)

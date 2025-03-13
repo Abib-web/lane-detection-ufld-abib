@@ -78,11 +78,12 @@ for i in range(len(test_dataset)):
 
     # Faire une prédiction
     predictions = model.predict(image_resized)
+    print(predictions)
     lane_predictions = predictions['fc_lanes']
-
+    print(f"Forme des prédictions : {lane_predictions.shape}")
     # Post-traitement des prédictions
     lane_predictions = postprocess_predictions(lane_predictions, threshold=0.2)
-
+    print(f"Forme des prédictions : {lane_predictions.shape}")
     # Dénormaliser les points de voie
     lane_points = lane_predictions.reshape(4, -1, 2)  # Reshape en (4, N, 2)
     for j in range(4):

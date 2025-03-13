@@ -7,8 +7,8 @@ class Config:
         
         # Paramètres d'entraînement
         self.batch_size = 8
-        self.img_size = (448, 448)
-        self.epochs = 15
+        self.img_size = (224, 224)
+        self.epochs = 10
         
         # Chemin vers le dossier des checkpoints
         self.checkpoints_dir = os.path.join("C:\\", "Users", "koneo", "Desktop", "lane-detection-ufld-abib", "checkpoints")

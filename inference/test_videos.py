@@ -46,7 +46,7 @@ if not os.path.exists(model_path):
 model = tf.keras.models.load_model(model_path)
 
 # Chemin vers la vidéo
-video_path = "C:/Users/koneo/Downloads/13284805_2160_3840_24fps.mp4"
+video_path = "C:/Users/koneo/Downloads/3398942-uhd_2160_3840_30fps.mp4"
 
 # Ouvrir la vidéo
 cap = cv2.VideoCapture(video_path)
