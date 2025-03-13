@@ -44,7 +44,7 @@ def postprocess_predictions(predictions, threshold=0.2):
 config = Config()
 
 # Charger le modèle
-model_path = os.path.join(config.checkpoints_dir, "ufld_model_final")
+model_path = os.path.join(config.checkpoints_dir1, "ufld_model_final")
 if not os.path.exists(model_path):
     raise FileNotFoundError(f"Le fichier de modèle {model_path} n'existe pas.")
 model = tf.keras.models.load_model(model_path)
@@ -78,12 +78,11 @@ for i in range(len(test_dataset)):
 
     # Faire une prédiction
     predictions = model.predict(image_resized)
-    print(predictions)
+    
     lane_predictions = predictions['fc_lanes']
-    print(f"Forme des prédictions : {lane_predictions.shape}")
     # Post-traitement des prédictions
-    lane_predictions = postprocess_predictions(lane_predictions, threshold=0.2)
-    print(f"Forme des prédictions : {lane_predictions.shape}")
+    lane_predictions = postprocess_predictions(lane_predictions, threshold=0.1)
+    
     # Dénormaliser les points de voie
     lane_points = lane_predictions.reshape(4, -1, 2)  # Reshape en (4, N, 2)
     for j in range(4):

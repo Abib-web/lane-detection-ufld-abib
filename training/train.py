@@ -39,7 +39,7 @@ model = UFLDModel(input_shape=(config.img_size[0], config.img_size[1], 3))
 
 # Définir les fonctions de perte
 losses = {
-    "fc_lanes": tf.keras.losses.MeanAbsoluteError(),  # Utiliser MAE au lieu de MSE
+    "fc_lanes": tf.keras.losses.Huber(),  # Huber Loss
     "fc_presence": tf.keras.losses.BinaryCrossentropy()
 }
 loss_weights = {
@@ -48,9 +48,9 @@ loss_weights = {
 }
 
 # Compiler le modèle avec un taux d'apprentissage personnalisé
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 model.compile(
-    optimizer='adam',
+    optimizer=optimizer,
     loss=losses,
     loss_weights=loss_weights,
     metrics={
@@ -60,10 +60,10 @@ model.compile(
 )
 
 # Callbacks
-csv_logger = CSVLogger(os.path.join(config.checkpoints_dir, "training_log.csv"), append=True)
+csv_logger = CSVLogger(os.path.join(config.checkpoints_dir2, "training_log.csv"), append=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
 checkpoint_callback = ModelCheckpoint(
-    filepath=os.path.join(config.checkpoints_dir, "ufld_model_epoch_{epoch:02d}"),
+    filepath=os.path.join(config.checkpoints_dir2, "ufld_model_epoch_{epoch:02d}"),
     save_best_only=True,
     save_format="tf",  # Sauvegarder en format TF
     monitor='val_loss',
@@ -71,16 +71,16 @@ checkpoint_callback = ModelCheckpoint(
     verbose=1
 )
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-tensorboard_callback = TensorBoard(log_dir=os.path.join(config.checkpoints_dir, "logs"))
+tensorboard_callback = TensorBoard(log_dir=os.path.join(config.checkpoints_dir2, "logs"))
 
 # Entraîner le modèle
 history = model.fit(
     train_dataset,
     epochs=config.epochs,
     validation_data=val_dataset,
-    callbacks=[reduce_lr, checkpoint_callback, csv_logger, early_stopping, tensorboard_callback]
+    callbacks=[reduce_lr, checkpoint_callback, csv_logger]
 )
 
 # Sauvegarder le modèle final
-model.save(os.path.join(config.checkpoints_dir, "ufld_model_final"), save_format="tf")
+model.save(os.path.join(config.checkpoints_dir2, "ufld_model_final"), save_format="tf")
 model.summary()
