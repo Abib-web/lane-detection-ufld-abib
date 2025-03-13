@@ -8,28 +8,34 @@ import tensorflow as tf
 from models.ufld_model import UFLDModel
 from utils.config import Config
 
-# Fonction pour afficher uniquement les points de prédiction
+# Fonction pour afficher les points de voie et les relier par des lignes
 def display_points_only(image, lane_points):
     """
-    Affiche les points de voie sur l'image sans les relier par des lignes.
+    Affiche les points de voie sur l'image et les relie par des lignes.
     """
     colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]  # Bleu, Vert, Rouge, Jaune
 
     # Vérifier si on a bien 4 ensembles de points
     if len(lane_points) != 4:
         print("Attention : le modèle ne fournit pas exactement 4 lignes.")
-        return
+        return image
 
     # Tracer chaque ensemble de points avec une couleur différente
     for i, points in enumerate(lane_points):
         points = [(int(x), int(y)) for x, y in points if x > 0 and y > 0]  # Filtrer les points invalides
+
+        # Tracer des lignes entre les points
+        for j in range(1, len(points)):
+            cv2.line(image, points[j - 1], points[j], color=colors[i], thickness=2)
+
+        # Tracer un cercle pour chaque point
         for point in points:
-            cv2.circle(image, point, radius=5, color=colors[i], thickness=-1)  # Tracer un cercle pour chaque point
+            cv2.circle(image, point, radius=5, color=colors[i], thickness=-1)
 
     return image
 
 # Fonction pour post-traiter les prédictions
-def postprocess_predictions(predictions, threshold=0.2):
+def postprocess_predictions(predictions, threshold=0.1):
     """
     Filtre les prédictions en dessous d'un certain seuil.
     """
@@ -46,7 +52,7 @@ if not os.path.exists(model_path):
 model = tf.keras.models.load_model(model_path)
 
 # Chemin vers la vidéo
-video_path = "C:/Users/koneo/Downloads/3398942-uhd_2160_3840_30fps.mp4"
+video_path = "C:/Users/koneo/Downloads/5002763-hd_948_2048_30fps.mp4"
 
 # Ouvrir la vidéo
 cap = cv2.VideoCapture(video_path)
@@ -61,7 +67,7 @@ while True:
 
     # Redimensionner l'image pour l'inférence (garder une taille raisonnable)
     original_height, original_width = frame.shape[:2]
-    image_resized = cv2.resize(frame, (640, 360))  # Redimensionner à une taille plus grande (640x360)
+    image_resized = cv2.resize(frame, (720, 900))  # Redimensionner à une taille plus grande (640x360)
     resized_height, resized_width = image_resized.shape[:2]
 
     # Préparer l'image pour le modèle
@@ -73,13 +79,20 @@ while True:
     lane_predictions = predictions['fc_lanes']
 
     # Post-traitement des prédictions
-    lane_predictions = postprocess_predictions(lane_predictions, threshold=0.2)
+    lane_predictions = postprocess_predictions(lane_predictions, threshold=0.1)
 
     # Dénormaliser les points de voie
     lane_points = lane_predictions.reshape(4, -1, 2)  # Reshape en (4, N, 2)
     for j in range(4):
-        lane_points[j][:, 0] *= resized_width  # Mise à l'échelle en largeur
-        lane_points[j][:, 1] *= resized_height  # Mise à l'échelle en hauteur
+        lane_points[j][:, 0] *= original_width  # Mise à l'échelle en largeur
+        lane_points[j][:, 1] *= original_height  # Mise à l'échelle en hauteur
+
+    # Ajuster les points pour qu'ils correspondent à l'image redimensionnée (640x360)
+    scale_x = resized_width / original_width
+    scale_y = resized_height / original_height
+    for j in range(4):
+        lane_points[j][:, 0] *= scale_x
+        lane_points[j][:, 1] *= scale_y
 
     # Afficher les points de voie sur la frame redimensionnée
     frame_with_points = display_points_only(image_resized.copy(), lane_points)
